@@ -1,70 +1,58 @@
-# Getting Started with Create React App
+# AWS CE Technical Assessment
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Overview
+This project is part of my AWS Cloud Engineer technical assessment.  
+It demonstrates how to build, containerize, and deploy a simple ReactJS web application using AWS services and CI/CD automation through GitHub Actions.
 
-## Available Scripts
+## Application
+The application is a simple **ReactJS** app that displays:
 
-In the project directory, you can run:
+"Hello World!"
 
-### `npm start`
+It serves as the main observable output for this assessment.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## CI/CD Workflow Summary
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 1. **Build and Artifact Upload**
+- When changes are pushed to the main branch, GitHub Actions automatically:
+  - Builds the React app  
+  - Zips the build output with a timestamp  
+  - Uploads the artifact to an **S3 bucket**
 
-### `npm test`
+### 2. **Docker Image Build and Push**
+- Another workflow builds the Docker image and pushes it to **Amazon ECR (Elastic Container Registry)**.  
+- The Docker image includes the production-ready React build served through NGINX.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### 3. **CloudFormation Deployment**
+- The final step deploys the Docker image to **AWS ECS (Fargate)** using a CloudFormation template.  
+- The stack creates an ECS service that automatically runs the containerized app.
 
-### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Security and Configuration
+All AWS credentials and environment variables are securely stored in **GitHub Secrets**.  
+They are never exposed directly in the repository or workflow files.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Secrets used:
+- `AWS_ACCESS_KEY_ID`  
+- `AWS_SECRET_ACCESS_KEY`  
+- `AWS_REGION`  
+- `S3_BUCKET`  
+- `ECR_REPOSITORY`  
+- `AWS_ACCOUNT_ID`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `npm run eject`
+## AWS Resources Used
+- **S3 Bucket** — for storing build artifacts  
+- **ECR Repository** — for Docker image storage  
+- **ECS Fargate** — for container deployment  
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Summary
+This project demonstrates:
+- Building and packaging a ReactJS app  
+- Automating builds using GitHub Actions  
+- Securely integrating AWS with GitHub  
+- Deploying a containerized application to AWS ECS (Fargate)
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+**Author:** Mark Khen Mutuc  
+**Date:** October 16, 2025

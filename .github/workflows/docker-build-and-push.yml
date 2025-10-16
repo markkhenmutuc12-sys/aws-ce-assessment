@@ -1,4 +1,4 @@
-name: push-docker-image-to-ecr
+name: build-and-push-to-ecr
 
 on:
   push:
@@ -6,28 +6,29 @@ on:
   workflow_dispatch:
 
 jobs:
-  push-to-ecr:
+  docker-build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Configure AWS
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Login to ECR
+      - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build and push image
+      - name: Build and push Docker image to ECR
         env:
-          ECR: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}
+          ECR_REPO_URI: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}
         run: |
-          TAG=$(date -u +'%Y%m%dT%H%M%SZ')
-          docker build -t $ECR:$TAG .
-          docker push $ECR:$TAG
-          echo "Image pushed: $ECR:$TAG"
+          IMAGE_TAG=$(date -u +'%Y%m%dT%H%M%SZ')
+          echo "Building Docker image with tag: $IMAGE_TAG"
+          docker build -t $ECR_REPO_URI:$IMAGE_TAG .
+          docker push $ECR_REPO_URI:$IMAGE_TAG
+          echo "Image successfully pushed to ECR: $ECR_REPO_URI:$IMAGE_TAG"

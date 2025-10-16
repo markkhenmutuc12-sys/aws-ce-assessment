@@ -1,4 +1,4 @@
-name: upload-artifacts-to-s3
+name: s3-artifacts
 
 on:
   push:
@@ -6,39 +6,36 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-upload:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js environment
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: 18
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install packages
+        run: npm install
 
-      - name: Build application
+      - name: Build project
         run: npm run build
 
-      - name: Archive build output
+      - name: Zip build folder
         run: |
-          TIMESTAMP=$(date -u +'%Y%m%dT%H%M%SZ')
-          ZIP_FILE="build-${TIMESTAMP}.zip"
-          zip -r "$ZIP_FILE" build
-          echo "ZIP_FILE=$ZIP_FILE" >> $GITHUB_ENV
+          FILE="build-$(date -u +'%Y%m%dT%H%M%SZ').zip"
+          zip -r "$FILE" build
+          echo "FILE_NAME=$FILE" >> $GITHUB_ENV
 
-      - name: Configure AWS credentials
+      - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Upload artifact to S3
-        run: |
-          aws s3 cp "$ZIP_FILE" "s3://${{ secrets.S3_BUCKET }}/artifacts/$ZIP_FILE"
-          echo "Successfully uploaded $ZIP_FILE to S3 bucket: ${{ secrets.S3_BUCKET }}"
+      - name: Upload to S3
+        run: aws s3 cp "$FILE_NAME" "s3://${{ secrets.S3_BUCKET }}/artifacts/$FILE_NAME"

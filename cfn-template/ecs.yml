@@ -1,11 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: ECS Cloudformation Template
+Description: ECS CloudFormation Template
 
 Parameters:
   VpcId:
     Type: String
   Subnets:
-    Type: String
+    Type: List<String>
   ClusterName:
     Type: String
   ContainerImage:

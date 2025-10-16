@@ -1,4 +1,4 @@
-name: upload-artifacts-to-s3
+name: push-docker-image-to-ecr
 
 on:
   push:
@@ -6,39 +6,28 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-upload:
+  push-to-ecr:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source code
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up Node.js environment
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build application
-        run: npm run build
-
-      - name: Archive build output
-        run: |
-          TIMESTAMP=$(date -u +'%Y%m%dT%H%M%SZ')
-          ZIP_FILE="build-${TIMESTAMP}.zip"
-          zip -r "$ZIP_FILE" build
-          echo "ZIP_FILE=$ZIP_FILE" >> $GITHUB_ENV
-
-      - name: Configure AWS credentials
+      - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Upload artifact to S3
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        env:
+          ECR: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}
         run: |
-          aws s3 cp "$ZIP_FILE" "s3://${{ secrets.S3_BUCKET }}/artifacts/$ZIP_FILE"
-          echo "Successfully uploaded $ZIP_FILE to S3 bucket: ${{ secrets.S3_BUCKET }}"
+          TAG=$(date -u +'%Y%m%dT%H%M%SZ')
+          docker build -t $ECR:$TAG .
+          docker push $ECR:$TAG
+          echo "Image pushed: $ECR:$TAG"

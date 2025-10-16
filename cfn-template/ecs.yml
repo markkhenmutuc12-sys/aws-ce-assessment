@@ -54,11 +54,3 @@ Resources:
           AssignPublicIp: ENABLED
           Subnets: !Ref Subnets
       TaskDefinition: !Ref TaskDefinition
-
-Outputs:
-  ServiceName:
-    Description: ECS Service Name
-    Value: !Ref Service
-  TaskDefinitionArn:
-    Description: Task Definition ARN
-    Value: !Ref TaskDefinition
